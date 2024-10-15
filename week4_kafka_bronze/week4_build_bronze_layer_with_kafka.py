@@ -69,13 +69,14 @@ df_with_aliases = df.selectExpr(
 )
 review_timestamp = df_with_aliases.withColumn('current_time', F.current_timestamp())
 
+review_timestamp.printSchema()
 
 # Process the received data
 query = review_timestamp \
   .writeStream \
   .outputMode("append") \
   .format("parquet") \
-  .option("path", "s3a://hwe-fall-2024/eschneider/bronze/customers") \
+  .option("path", "s3a://hwe-fall-2024/eschneider/bronze/reviews") \
   .option("checkpointLocation", "C:/tmp/kafka-checkpoint") \
   .start()
 
