@@ -29,15 +29,41 @@ logger = spark.sparkContext._jvm.org.apache.log4j
 logger.LogManager.getLogger("org.apache.spark.util.ShutdownHookManager"). setLevel( logger.Level.OFF )
 logger.LogManager.getLogger("org.apache.spark.SparkEnv"). setLevel( logger.Level.ERROR )
 
-bronze_schema = None
+bronze_schema = StructType([
+    StructField("marketplace", StringType, nullable=False)
+    , StructField("customer_id", StringType, nullable=False)
+    , StructField("review_id", StringType, nullable=False)
+    , StructField("product_id", StringType, nullable=False)
+    , StructField("product_parent", StringType, nullable=False)
+    , StructField("product_title", StringType, nullable=False)
+    , StructField("product_category", StringType, nullable=False)
+    , StructField("star_rating", IntegerType, nullable=False)
+    , StructField("helpful_votes", IntegerType, nullable=False)
+    , StructField("total_votes", IntegerType, nullable=False)
+    , StructField("vine", StringType, nullable=False)
+    , StructField("verified_purchase", StringType, nullable=False)
+    , StructField("review_headline", StringType, nullable=False)
+    , StructField("review_body", StringType, nullable=False)
+    , StructField("purchase_date", StringType, nullable=False)
+    , StructField("current_timestamp", TimestampType, nullable=False)
 
-bronze_reviews = None
+])
 
-bronze_customers = None
+bronze_reviews = spark.readStream.format("parquet").load("s3a://hwe-fall-2024/eschneider/bronze/reviews")
+bronze_reviews.createOrReplaceTempView("bronze_reviews_view")
+bronze_customers = bronze_customers = spark.read.parquet("s3a://hwe-fall-2024/eschneider/bronze/customers")
+bronze_customers.createOrReplaceTempView("bronze_customers_view")
+joined_data = bronze_reviews.join(bronze_customers, "customer_id")
+silver_data = silver_data = joined_data.filter(joined_data.verified == True)
 
-silver_data = None
 
-streaming_query = None
+streaming_query = silver_data \
+  .writeStream \
+  .outputMode("append") \
+  .format("parquet") \
+  .option("path", "s3a://hwe-fall-2024/eschneider/silver/reviews") \
+  .option("checkpointLocation", "C:/tmp/silver-checkpoint") \
+  .start()
 
 streaming_query.start().awaitTermination()
 
