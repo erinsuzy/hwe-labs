@@ -95,6 +95,6 @@ customers = spark.read.csv("resources/customers.tsv.gz", sep='\t', header=True)
 customers.write.mode('overwrite').parquet("s3a://hwe-fall-2024/eschneider/bronze/customers")
 #Make sure to write it using overwrite mode: append will keep appending duplicates, which will cause problems in later labs...
 #There are no questions to answer about this data set right now, but you will use it in a later lab...
-
+customers.printSchema()
 # Stop the SparkSession
 spark.stop()

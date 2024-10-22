@@ -48,24 +48,24 @@ df = spark \
     .option("kafka.security.protocol", "SASL_SSL") \
     .option("kafka.sasl.mechanism", "SCRAM-SHA-512") \
     .option("kafka.sasl.jaas.config", getScramAuthString(username, password)) \
-    .load().selectExpr("CAST(value AS STRING) as message")
-
+    .load() \
+    
 df_with_aliases = df.selectExpr(
-    "split(message, '\t')[0] AS marketplace",
-    "split(message, '\t')[1] AS customer_id",
-    "split(message, '\t')[2] AS review_id",
-    "split(message, '\t')[3] AS product_id",
-    "split(message, '\t')[4] AS product_parent",
-    "split(message, '\t')[5] AS product_title",
-    "split(message, '\t')[6] AS product_category",
-    "split(message, '\t')[7] AS star_rating",
-    "split(message, '\t')[8] AS helpful_votes",
-    "split(message, '\t')[9] AS total_votes",
-    "split(message, '\t')[10] AS vine",
-    "split(message, '\t')[11] AS verified_purchase",
-    "split(message, '\t')[12] AS review_headline",
-    "split(message, '\t')[13] AS review_body",
-    "split(message, '\t')[14] AS purchase_date",
+    "split(value, '\t')[0] AS marketplace",
+    "split(value, '\t')[1] AS customer_id",
+    "split(value, '\t')[2] AS review_id",
+    "split(value, '\t')[3] AS product_id",
+    "split(value, '\t')[4] AS product_parent",
+    "split(value, '\t')[5] AS product_title",
+    "split(value, '\t')[6] AS product_category",
+    "cast(split(value, '\t')[7] as int) AS star_rating",
+    "cast(split(value, '\t')[8] as int) AS helpful_votes",
+    "cast(split(value, '\t')[9] as int) AS total_votes",
+    "split(value, '\t')[10] AS vine",
+    "split(value, '\t')[11] AS verified_purchase", 
+    "split(value, '\t')[12] AS review_headline",
+    "split(value, '\t')[13] AS review_body",
+    "split(value, '\t')[14] AS purchase_date",
 )
 review_timestamp = df_with_aliases.withColumn('current_time', F.current_timestamp())
 
