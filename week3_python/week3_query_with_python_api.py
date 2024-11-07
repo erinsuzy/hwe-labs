@@ -83,11 +83,11 @@ purchase_date.show(1)
 #Question 9: Add a column to the dataframe named "review_timestamp", representing the current time on your computer. 
 #Hint: Check the documentation for a function that can help: https://spark.apache.org/docs/3.1.3/api/python/reference/pyspark.sql.html#functions
 #Print the schema and inspect a few rows of data to make sure the data is correctly populated.
-review_timestamp = reviews.withColumn('current_time', F.current_timestamp())
+review_timestamp = reviews.withColumn('review_timestamp', F.current_timestamp())
 review_timestamp.show(10)
 #Question 10: Write the dataframe with load timestamp to s3a://hwe-$CLASS/$HANDLE/bronze/reviews_static in Parquet format.
 #Make sure to write it using overwrite mode: append will keep appending duplicates, which will cause problems in later labs...
-reviews_with_timestamp = reviews.withColumn('load_timestamp', F.current_timestamp())
+reviews_with_timestamp = reviews.withColumn('review_timestamp', F.current_timestamp())
 reviews_with_timestamp.write.mode('overwrite').parquet("s3a://hwe-fall-2024/eschneider/bronze/reviews_static")
 #Question 11: Read the tab separated file named "resources/customers.tsv.gz" into a dataframe
 #Write to S3 under s3a://hwe-$CLASS/$HANDLE/bronze/customers

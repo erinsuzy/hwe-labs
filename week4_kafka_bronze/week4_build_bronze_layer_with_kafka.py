@@ -67,7 +67,7 @@ df_with_aliases = df.selectExpr(
     "split(value, '\t')[13] AS review_body",
     "split(value, '\t')[14] AS purchase_date",
 )
-review_timestamp = df_with_aliases.withColumn('current_time', F.current_timestamp())
+review_timestamp = df_with_aliases.withColumn('review_timestamp', F.current_timestamp())
 
 review_timestamp.printSchema()
 

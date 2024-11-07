@@ -1,6 +1,6 @@
 import os
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import count
+from pyspark.sql.functions import window, count
 from pyspark.sql.types import StructType, StructField, StringType, TimestampType, IntegerType
 
 # Load environment variables.
@@ -59,15 +59,17 @@ silver_schema = StructType ([
 silver_data = spark.readStream \
     .format("parquet") \
     .schema(silver_schema) \
-    .load("s3a://hwe-fall-2024/eschneider/silver/reviews") 
+   .load("s3a://hwe-fall-2024/eschneider/silver/reviews") 
+
 
 #Define a watermarked_data dataframe by defining a watermark on the `review_timestamp` column with an interval of 10 seconds
 watermarked_data = silver_data.withWatermark("review_timestamp", "10 seconds") 
 
 #Define an aggregated dataframe using `groupBy` functionality to summarize that data over any dimensions you may find interesting
-aggregated_data = watermarked_data.groupBy("customer_id", "review_timestamp").agg(
-        count("*").alias("total_reviews"),
-        )
+
+aggregated_data = watermarked_data.groupBy("review_timestamp", "product_title", "star_rating").agg(
+   count("*").alias("product_rating")
+)
 
 
 #Write that aggregate data to S3 under s3a://hwe-$CLASS/$HANDLE/gold/fact_review using append mode and a checkpoint location of `/tmp/gold-checkpoint`
@@ -76,9 +78,10 @@ write_gold_query = aggregated_data \
     .format("delta") \
     .outputMode("append") \
     .option("path", "s3a://hwe-fall-2024/eschneider/gold/fact_review") \
-    .option("checkpointLocation","C:/tmp/gold-checkpoint")
+    .option("checkpointLocation", "C:/tmp/gold-checkpoint") \
+    .start()
 
-write_gold_query.start().awaitTermination()
+write_gold_query.awaitTermination()
 
 ## Stop the SparkSession
 spark.stop()

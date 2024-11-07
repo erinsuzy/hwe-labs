@@ -45,7 +45,7 @@ bronze_schema = StructType([
     , StructField("review_headline", StringType(), nullable=True)
     , StructField("review_body", StringType(), nullable=True)
     , StructField("purchase_date", StringType(), nullable=True)
-    , StructField("current_timestamp", TimestampType(), nullable=True)
+    , StructField("review_timestamp", TimestampType(), nullable=True)
 
 ])
 
@@ -56,7 +56,7 @@ bronze_customers.createOrReplaceTempView("bronze_customers_view")
 
 silver_data = spark.sql(
     "SELECT r.marketplace, r.customer_id, r.product_id, r.product_parent, r.product_title, r.product_category, r.star_rating, r.helpful_votes, \
-        r.total_votes, r.vine, r.verified_purchase, r.review_headline, r.review_body, r.purchase_date, r.current_timestamp, c.customer_name, c.gender, \
+        r.total_votes, r.vine, r.verified_purchase, r.review_headline, r.review_body, r.purchase_date, r.review_timestamp, c.customer_name, c.gender, \
         c.date_of_birth, c.city, c.state FROM bronze_reviews_view r INNER JOIN bronze_customers_view c ON r.customer_id = c.customer_id WHERE verified_purchase='Y'"
 )   
 
